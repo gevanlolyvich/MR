@@ -77,6 +77,25 @@ export default {
       borderRadius: {
         card: "0.375rem",
       },
+      keyframes: {
+        "slide-in": {
+          from: { transform: "translateY(-8px)", opacity: "0" },
+          to: { transform: "translateY(0)", opacity: "1" },
+        },
+        fade: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "scale-in": {
+          from: { transform: "scale(0.97)", opacity: "0" },
+          to: { transform: "scale(1)", opacity: "1" },
+        },
+      },
+      animation: {
+        "slide-in": "slide-in 0.2s ease-out",
+        fade: "fade 0.15s ease-out",
+        "scale-in": "scale-in 0.15s ease-out",
+      },
     },
   },
   plugins: [],

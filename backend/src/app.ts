@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 dotenv.config();
 
 import { authRouter } from "./modules/auth/auth.routes";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { notFoundHandler, errorHandler } from "./middleware/error";
 
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api", globalLimiter);
 app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "jxb-mr" }));
 
 app.use("/api/auth", authRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

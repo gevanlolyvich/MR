@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { ChangePasswordPage } from "@/features/auth/ChangePasswordPage";
 import { RedirectIfAuthed, RequireAuth } from "@/features/auth/guards";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ModulePlaceholder } from "@/components/layout/ModulePlaceholder";
 
 export function AppRoutes() {
@@ -21,7 +22,7 @@ export function AppRoutes() {
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<ModulePlaceholder modulKey="/" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/risks" element={<ModulePlaceholder modulKey="/risks" />} />
           <Route path="/risks/:id" element={<ModulePlaceholder modulKey="/risks" />} />
           <Route path="/matrix" element={<ModulePlaceholder modulKey="/matrix" />} />

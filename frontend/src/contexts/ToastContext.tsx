@@ -28,10 +28,10 @@ const icons: Record<ToastVariant, typeof Info> = {
 };
 
 const styles: Record<ToastVariant, string> = {
-  success: "border-success/30 text-success",
-  error: "border-danger/30 text-danger",
-  warning: "border-warning/40 text-[#8A6210]",
-  info: "border-primary-200 text-primary-700",
+  success: "border-success/30",
+  error: "border-danger/30",
+  warning: "border-warning/40",
+  info: "border-primary-200",
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
@@ -79,7 +79,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 styles[t.variant],
               )}
             >
-              <Icon className="h-5 w-5 shrink-0 mt-0.5" aria-hidden="true" />
+              <Icon className={cn("h-5 w-5 shrink-0 mt-0.5", styles[t.variant])} aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-content-primary">{t.title}</p>
                 {t.message && <p className="text-xs text-content-secondary mt-0.5">{t.message}</p>}

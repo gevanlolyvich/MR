@@ -1,0 +1,41 @@
+{
+  "name": "jxb-mr-backend",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
+    "db:status": "prisma migrate status",
+    "db:check": "ts-node --transpile-only src/scripts/check-db.ts"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "@prisma/client": "^5.22.0",
+    "zod": "^3.23.8",
+    "express-rate-limit": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "prisma": "^5.22.0"
+  }
+}

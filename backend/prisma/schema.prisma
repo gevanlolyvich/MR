@@ -1,0 +1,428 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  MR
+  RISK_OFFICER
+  RISK_OWNER
+}
+
+enum RiskStatus {
+  DRAFT
+  SUBMITTED
+  RETURNED
+  PENDING_VALIDATION
+  REJECTED
+  ACTIVE
+  PENDING_VERIFICATION
+  CLOSED
+}
+
+enum AssessmentType {
+  INHERENT
+  RESIDUAL
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  VERY_HIGH
+}
+
+enum MitigationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  PENDING_VERIFICATION
+}
+
+enum ApprovalAction {
+  SUBMIT
+  RETURN_FOR_REVISION
+  REVIEW_APPROVE
+  REVIEW_REJECT
+  VALIDATE
+  VALIDATE_REJECT
+  UPDATE_PROGRESS
+  VERIFY
+  VERIFY_REJECT
+  SUBMIT_RESIDUAL
+  RESIDUAL_APPROVE
+  RESIDUAL_REJECT
+  CLOSE
+}
+
+model Branch {
+  id          String @id @default(cuid())
+  code        String @unique
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+  risks Risk[]
+  auditLogs AuditLog[] @relation("ActorBranch")
+
+  @@map("branches")
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        RoleName @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  code        String @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id                String @id @default(cuid())
+  username          String @unique
+  email             String @unique
+  passwordHash      String
+  fullName          String
+  roleId            String
+  branchId          String?
+  isActive          Boolean @default(true)
+  mustChangePassword Boolean @default(false)
+  lastLoginAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+
+  role           Role            @relation(fields: [roleId], references: [id])
+  branch         Branch?         @relation(fields: [branchId], references: [id])
+  ownedRisks     Risk[]          @relation("RiskOwner")
+  createdRisks   Risk[]          @relation("RiskCreator")
+  assessments    RiskAssessment[]
+  historyChanges AssessmentHistory[]
+  responsibleMitigations MitigationPlan[] @relation("MitigationResponsible")
+  verifiedMitigations    MitigationPlan[] @relation("MitigationVerifier")
+  mitigationUpdates     MitigationUpdate[]
+  uploadedEvidence      MitigationEvidence[]
+  approvals      WorkflowApproval[]
+  comments       ReviewComment[]
+  uploads        Attachment[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]       @relation("AuditActor")
+  updatedSettings SystemSetting[] @relation("SettingUpdater")
+
+  @@index([branchId])
+  @@index([roleId])
+  @@map("users")
+}
+
+model RiskCategory {
+  id          String @id @default(cuid())
+  code        String @unique
+  name        String
+  description String?
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  risks Risk[]
+
+  @@map("risk_categories")
+}
+
+model Risk {
+  id          String @id @default(cuid())
+  code        String @unique
+  branchId    String
+  categoryId  String
+  ownerId     String
+  createdById String
+  title       String
+  description String
+  causes      String?
+  impacts     String?
+  status      RiskStatus @default(DRAFT)
+
+  inherentProbability Int
+  inherentImpact      Int
+  inherentScore       Int
+  inherentLevel       RiskLevel
+
+  residualProbability Int?
+  residualImpact      Int?
+  residualScore       Int?
+  residualLevel       RiskLevel?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  branch     Branch       @relation(fields: [branchId], references: [id])
+  category   RiskCategory @relation(fields: [categoryId], references: [id])
+  owner      User         @relation("RiskOwner", fields: [ownerId], references: [id])
+  createdBy  User         @relation("RiskCreator", fields: [createdById], references: [id])
+
+  assessments RiskAssessment[]
+  histories   AssessmentHistory[]
+  mitigations MitigationPlan[]
+  approvals   WorkflowApproval[]
+  comments    ReviewComment[]
+  attachments Attachment[]
+
+  @@index([branchId, status])
+  @@index([categoryId, status])
+  @@index([status])
+  @@index([inherentLevel])
+  @@index([createdAt])
+  @@index([ownerId])
+  @@map("risks")
+}
+
+model RiskAssessment {
+  id            String @id @default(cuid())
+  riskId        String
+  type          AssessmentType
+  probability   Int
+  impact        Int
+  score         Int
+  level         RiskLevel
+  justification String?
+  assessedById  String
+  createdAt     DateTime @default(now())
+
+  risk       Risk @relation(fields: [riskId], references: [id])
+  assessedBy User @relation(fields: [assessedById], references: [id])
+
+  @@index([riskId, type])
+  @@map("risk_assessments")
+}
+
+model AssessmentHistory {
+  id             String @id @default(cuid())
+  riskId         String
+  type           AssessmentType
+  oldProbability Int?
+  oldImpact      Int?
+  newProbability Int
+  newImpact      Int
+  reason         String?
+  changedById    String
+  createdAt      DateTime @default(now())
+
+  risk       Risk @relation(fields: [riskId], references: [id])
+  changedBy User @relation(fields: [changedById], references: [id])
+
+  @@index([riskId, createdAt])
+  @@map("assessment_history")
+}
+
+model MitigationPlan {
+  id            String @id @default(cuid())
+  riskId        String
+  description   String
+  actionPlan    String?
+  responsibleId String
+  startDate     DateTime?
+  dueDate       DateTime?
+  budget        Decimal? @db.Decimal(15, 2)
+  progress      Int @default(0)
+  status        MitigationStatus @default(NOT_STARTED)
+  verifiedById  String?
+  verifiedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  risk        Risk    @relation(fields: [riskId], references: [id])
+  responsible User    @relation("MitigationResponsible", fields: [responsibleId], references: [id])
+  verifiedBy  User?   @relation("MitigationVerifier", fields: [verifiedById], references: [id])
+
+  updates   MitigationUpdate[]
+  evidences MitigationEvidence[]
+  approvals WorkflowApproval[] @relation("PlanApproval")
+  comments  ReviewComment[]   @relation("PlanComment")
+
+  @@index([riskId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([responsibleId])
+  @@map("mitigation_plans")
+}
+
+model MitigationUpdate {
+  id            String @id @default(cuid())
+  planId        String
+  progress      Int
+  note          String?
+  submittedById String
+  createdAt     DateTime @default(now())
+
+  plan       MitigationPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  submittedBy User          @relation(fields: [submittedById], references: [id])
+
+  evidences MitigationEvidence[]
+
+  @@index([planId, createdAt])
+  @@map("mitigation_updates")
+}
+
+model MitigationEvidence {
+  id            String @id @default(cuid())
+  planId        String
+  updateId      String?
+  fileName      String
+  filePath      String
+  mimeType      String
+  size          Int
+  uploadedById  String
+  createdAt     DateTime @default(now())
+
+  plan       MitigationPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  update     MitigationUpdate? @relation(fields: [updateId], references: [id], onDelete: SetNull)
+  uploadedBy User            @relation(fields: [uploadedById], references: [id])
+
+  @@index([planId])
+  @@map("mitigation_evidence")
+}
+
+model WorkflowApproval {
+  id              String @id @default(cuid())
+  riskId          String
+  planId          String?
+  action          ApprovalAction
+  fromStatus      RiskStatus?
+  toStatus        RiskStatus?
+  note            String?
+  actorId         String
+  createdAt       DateTime @default(now())
+
+  risk  Risk            @relation(fields: [riskId], references: [id])
+  actor User            @relation(fields: [actorId], references: [id])
+  plan  MitigationPlan? @relation("PlanApproval", fields: [planId], references: [id])
+
+  @@index([riskId, createdAt])
+  @@index([actorId])
+  @@index([planId])
+  @@map("workflow_approvals")
+}
+
+model ReviewComment {
+  id         String @id @default(cuid())
+  riskId     String
+  planId     String?
+  authorId   String
+  authorRole RoleName
+  comment    String
+  isResolved Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  risk  Risk            @relation(fields: [riskId], references: [id])
+  plan  MitigationPlan? @relation("PlanComment", fields: [planId], references: [id])
+  author User           @relation(fields: [authorId], references: [id])
+
+  @@index([riskId])
+  @@index([planId])
+  @@map("review_comments")
+}
+
+model Attachment {
+  id           String @id @default(cuid())
+  riskId       String
+  fileName     String
+  filePath     String
+  mimeType     String
+  size         Int
+  uploadedById String
+  createdAt    DateTime @default(now())
+
+  risk       Risk @relation(fields: [riskId], references: [id])
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+
+  @@index([riskId])
+  @@map("attachments")
+}
+
+model Notification {
+  id        String @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String
+  link      String?
+  isRead    Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String @id @default(cuid())
+  actorId     String?
+  actorName   String?
+  actorRole   RoleName?
+  branchId    String?
+  action      String
+  entityType  String
+  entityId    String?
+  description String?
+  before      Json?
+  after       Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  actor  User?   @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  branch Branch? @relation("ActorBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  description String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation("SettingUpdater", fields: [updatedById], references: [id])
+
+  @@map("system_settings")
+}

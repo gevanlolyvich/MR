@@ -1,0 +1,18 @@
+{
+  "name": "jxb-mr",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "db:generate": "npm run db:generate -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:deploy": "npm run db:deploy -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:status": "npm run db:status -w backend",
+    "db:check": "npm run db:check -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

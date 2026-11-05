@@ -9,6 +9,9 @@ dotenv.config();
 
 import { authRouter } from "./modules/auth/auth.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
+import { risksRouter } from "./modules/risks/risk.routes";
+import { matrixRouter } from "./modules/risks/matrix.routes";
+import { refsRouter } from "./modules/master/refs.routes";
 import { notFoundHandler, errorHandler } from "./middleware/error";
 
 const app = express();
@@ -38,6 +41,9 @@ app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "jxb-mr"
 
 app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/risks", risksRouter);
+app.use("/api/matrix", matrixRouter);
+app.use("/api", refsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

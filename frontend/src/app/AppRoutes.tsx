@@ -4,6 +4,9 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { ChangePasswordPage } from "@/features/auth/ChangePasswordPage";
 import { RedirectIfAuthed, RequireAuth } from "@/features/auth/guards";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { RisksPage } from "@/features/risks/RisksPage";
+import { RiskDetailPage } from "@/features/risks/RiskDetailPage";
+import { MatrixPage } from "@/features/risks/MatrixPage";
 import { ModulePlaceholder } from "@/components/layout/ModulePlaceholder";
 
 export function AppRoutes() {
@@ -23,9 +26,9 @@ export function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/risks" element={<ModulePlaceholder modulKey="/risks" />} />
-          <Route path="/risks/:id" element={<ModulePlaceholder modulKey="/risks" />} />
-          <Route path="/matrix" element={<ModulePlaceholder modulKey="/matrix" />} />
+          <Route path="/risks" element={<RisksPage />} />
+          <Route path="/risks/:id" element={<RiskDetailPage />} />
+          <Route path="/matrix" element={<MatrixPage />} />
           <Route path="/mitigations" element={<ModulePlaceholder modulKey="/mitigations" />} />
           <Route path="/monitoring" element={<ModulePlaceholder modulKey="/monitoring" />} />
           <Route path="/approvals" element={<ModulePlaceholder modulKey="/approvals" />} />

@@ -17,6 +17,12 @@ import { approvalsRouter } from "./modules/approvals/approval.routes";
 import { mitigationsRouter } from "./modules/mitigations/mitigation.routes";
 import { monitoringRouter } from "./modules/monitoring/monitoring.routes";
 import { notificationsRouter } from "./modules/notifications/notification.routes";
+import { usersRouter } from "./modules/users/user.routes";
+import { branchesRouter } from "./modules/master/branch.routes";
+import { categoriesRouter } from "./modules/master/category.routes";
+import { auditRouter } from "./modules/audit/audit.routes";
+import { settingsRouter } from "./modules/settings/setting.routes";
+import { reportsRouter } from "./modules/reports/report.routes";
 import { notFoundHandler, errorHandler } from "./middleware/error";
 
 const app = express();
@@ -55,6 +61,12 @@ app.use("/api/approvals", approvalsRouter);
 app.use("/api/mitigations", mitigationsRouter);
 app.use("/api/monitoring", monitoringRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/users", usersRouter);
+app.use("/api/master/branches", branchesRouter);
+app.use("/api/master/categories", categoriesRouter);
+app.use("/api/audit", auditRouter);
+app.use("/api/settings", settingsRouter);
+app.use("/api/reports", reportsRouter);
 app.use("/api", refsRouter);
 
 app.use(notFoundHandler);

@@ -10,6 +10,12 @@ import { MatrixPage } from "@/features/risks/MatrixPage";
 import { ApprovalPage } from "@/features/approvals/ApprovalPage";
 import { MitigationPage } from "@/features/mitigations/MitigationPage";
 import { MonitoringPage } from "@/features/monitoring/MonitoringPage";
+import { ReportsPage } from "@/features/reports/ReportsPage";
+import { UsersPage } from "@/features/users/UsersPage";
+import { BranchesPage } from "@/features/branches/BranchesPage";
+import { MasterDataPage } from "@/features/master-data/MasterDataPage";
+import { AuditPage } from "@/features/audit/AuditPage";
+import { SettingsPage } from "@/features/settings/SettingsPage";
 import { ModulePlaceholder } from "@/components/layout/ModulePlaceholder";
 
 export function AppRoutes() {
@@ -35,12 +41,12 @@ export function AppRoutes() {
           <Route path="/mitigations" element={<MitigationPage />} />
           <Route path="/monitoring" element={<MonitoringPage />} />
           <Route path="/approvals" element={<ApprovalPage />} />
-          <Route path="/reports" element={<ModulePlaceholder modulKey="/reports" />} />
-          <Route path="/users" element={<ModulePlaceholder modulKey="/users" />} />
-          <Route path="/branches" element={<ModulePlaceholder modulKey="/branches" />} />
-          <Route path="/master-data" element={<ModulePlaceholder modulKey="/master-data" />} />
-          <Route path="/audit" element={<ModulePlaceholder modulKey="/audit" />} />
-          <Route path="/settings" element={<ModulePlaceholder modulKey="/settings" />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/branches" element={<BranchesPage />} />
+          <Route path="/master-data" element={<MasterDataPage />} />
+          <Route path="/audit" element={<AuditPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="/profile" element={<ModulePlaceholder modulKey="/profile" />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

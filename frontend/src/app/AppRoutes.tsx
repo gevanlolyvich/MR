@@ -7,6 +7,9 @@ import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { RisksPage } from "@/features/risks/RisksPage";
 import { RiskDetailPage } from "@/features/risks/RiskDetailPage";
 import { MatrixPage } from "@/features/risks/MatrixPage";
+import { ApprovalPage } from "@/features/approvals/ApprovalPage";
+import { MitigationPage } from "@/features/mitigations/MitigationPage";
+import { MonitoringPage } from "@/features/monitoring/MonitoringPage";
 import { ModulePlaceholder } from "@/components/layout/ModulePlaceholder";
 
 export function AppRoutes() {
@@ -29,9 +32,9 @@ export function AppRoutes() {
           <Route path="/risks" element={<RisksPage />} />
           <Route path="/risks/:id" element={<RiskDetailPage />} />
           <Route path="/matrix" element={<MatrixPage />} />
-          <Route path="/mitigations" element={<ModulePlaceholder modulKey="/mitigations" />} />
-          <Route path="/monitoring" element={<ModulePlaceholder modulKey="/monitoring" />} />
-          <Route path="/approvals" element={<ModulePlaceholder modulKey="/approvals" />} />
+          <Route path="/mitigations" element={<MitigationPage />} />
+          <Route path="/monitoring" element={<MonitoringPage />} />
+          <Route path="/approvals" element={<ApprovalPage />} />
           <Route path="/reports" element={<ModulePlaceholder modulKey="/reports" />} />
           <Route path="/users" element={<ModulePlaceholder modulKey="/users" />} />
           <Route path="/branches" element={<ModulePlaceholder modulKey="/branches" />} />

@@ -1,9 +1,12 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Bell, LogOut, Menu, RotateCcw, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, CheckCheck, LogOut, Menu, RotateCcw, User } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import { Breadcrumb } from "./Breadcrumb";
 import { Dropdown, DropdownDivider, DropdownItem } from "@/components/ui/Dropdown";
 import { useAuth, type RoleName } from "@/contexts/AuthContext";
+import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/features/notifications/api";
+import { cn } from "@/lib/utils";
 
 interface TopbarProps {
   title: string;
@@ -19,11 +22,16 @@ const roleLabels: Record<RoleName, string> = {
 
 export function Topbar({ title, crumbItems, onOpenMobile }: TopbarProps) {
   const { user, logout } = useAuth();
-  const [unread, _setUnread] = useState(0);
+  const navigate = useNavigate();
+  const notifications = useNotifications();
+  const markRead = useMarkNotificationRead();
+  const markAll = useMarkAllNotificationsRead();
+
+  const unread = notifications.data?.unread ?? 0;
+  const items = notifications.data?.data ?? [];
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-white px-3 sm:px-5">
-      {/* Mobile: tombol menu */}
       <button
         onClick={onOpenMobile}
         aria-label="Buka menu navigasi"
@@ -38,16 +46,68 @@ export function Topbar({ title, crumbItems, onOpenMobile }: TopbarProps) {
       </div>
 
       {/* Notification */}
-      <button
-        className="relative grid h-9 w-9 shrink-0 place-items-center rounded text-content-secondary hover:bg-slate-100 hover:text-content-primary"
-        aria-label={`Notifikasi${unread ? `, ${unread} belum dibaca` : " (tidak ada)"}`}
-        title="Notifikasi"
+      <Dropdown
+        className="shrink-0"
+        trigger={
+          <span
+            className="relative grid h-9 w-9 place-items-center rounded text-content-secondary hover:bg-slate-100 hover:text-content-primary"
+            aria-label={`Notifikasi${unread ? `, ${unread} belum dibaca` : " (tidak ada)"}`}
+            title="Notifikasi"
+          >
+            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[9px] font-semibold text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </span>
+        }
       >
-        <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
-        {unread > 0 && (
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-danger" aria-hidden="true" />
-        )}
-      </button>
+        <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+          <p className="text-xs font-semibold text-content-primary">Notifikasi</p>
+          {unread > 0 && (
+            <button
+              onClick={() => markAll.mutate()}
+              className="inline-flex items-center gap-1 text-2xs font-medium text-primary-600 hover:underline"
+            >
+              <CheckCheck className="h-3 w-3" aria-hidden="true" />
+              Tandai semua
+            </button>
+          )}
+        </div>
+        <div className="max-h-80 overflow-y-auto">
+          {items.length === 0 ? (
+            <p className="px-3 py-6 text-center text-xs text-content-secondary">Belum ada notifikasi</p>
+          ) : (
+            items.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => {
+                  if (!n.isRead) markRead.mutate(n.id);
+                  if (n.link) {
+                    navigate(n.link);
+                  }
+                }}
+                className={cn(
+                  "block w-full border-b border-border px-3 py-2.5 text-left last:border-0 hover:bg-slate-50",
+                  !n.isRead && "bg-primary-50/50",
+                )}
+              >
+                <div className="flex items-start gap-2">
+                  <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full", n.isRead ? "bg-transparent" : "bg-primary-500")} aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-content-primary">{n.title}</p>
+                    <p className="mt-0.5 text-2xs text-content-secondary leading-snug line-clamp-2">{n.message}</p>
+                    <p className="mt-1 text-[10px] text-content-muted">
+                      {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: idLocale })}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </Dropdown>
 
       {/* Profile */}
       <Dropdown
@@ -73,7 +133,7 @@ export function Topbar({ title, crumbItems, onOpenMobile }: TopbarProps) {
           </span>
         }
       >
-      <DropdownItem icon={<User className="h-4 w-4" aria-hidden="true" />}>
+        <DropdownItem icon={<User className="h-4 w-4" aria-hidden="true" />}>
           <Link to="/profile" className="block w-full">
             Profil Saya
           </Link>

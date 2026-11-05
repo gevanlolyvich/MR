@@ -4,6 +4,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import path from "path";
 
 dotenv.config();
 
@@ -12,6 +13,10 @@ import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { risksRouter } from "./modules/risks/risk.routes";
 import { matrixRouter } from "./modules/risks/matrix.routes";
 import { refsRouter } from "./modules/master/refs.routes";
+import { approvalsRouter } from "./modules/approvals/approval.routes";
+import { mitigationsRouter } from "./modules/mitigations/mitigation.routes";
+import { monitoringRouter } from "./modules/monitoring/monitoring.routes";
+import { notificationsRouter } from "./modules/notifications/notification.routes";
 import { notFoundHandler, errorHandler } from "./middleware/error";
 
 const app = express();
@@ -26,6 +31,9 @@ app.use(
 );
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
+
+// File bukti mitigasi / lampiran
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads"), { fallthrough: false }));
 
 // Rate limit global ringan
 const globalLimiter = rateLimit({
@@ -43,6 +51,10 @@ app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/risks", risksRouter);
 app.use("/api/matrix", matrixRouter);
+app.use("/api/approvals", approvalsRouter);
+app.use("/api/mitigations", mitigationsRouter);
+app.use("/api/monitoring", monitoringRouter);
+app.use("/api/notifications", notificationsRouter);
 app.use("/api", refsRouter);
 
 app.use(notFoundHandler);

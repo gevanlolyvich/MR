@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRightLeft,
   Building2,
+  CheckCircle2,
   ChevronRight,
   ClipboardList,
   FileText,
@@ -17,6 +18,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { fetchDetail, riskKeys, useDeleteRisk, useSaveAssessment, useSubmitRisk, useUpdateRisk, CommentRow } from "./api";
+import { useSubmitResidual } from "@/features/approvals/api";
 import { RiskLevel, RiskStatus } from "./types";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -29,6 +31,7 @@ import { Input, Label, FieldError, Textarea } from "@/components/ui/Input";
 import { Tabs, TabItem } from "@/components/ui/Tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -105,6 +108,8 @@ export function RiskDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [submitNote, setSubmitNote] = useState("");
+  const [residualOpen, setResidualOpen] = useState(false);
+  const [residualNote, setResidualNote] = useState("");
 
   const detail = useQuery({
     queryKey: riskKeys.detail(id),
@@ -121,6 +126,7 @@ export function RiskDetailPage() {
     },
     onError: (msg) => toast.error("Gagal mengajukan", msg),
   });
+  const submitResidual = useSubmitResidual();
   const update = useUpdateRisk(id, {
     onSuccess: () => {
       toast.success("Perubahan tersimpan");
@@ -175,6 +181,12 @@ export function RiskDetailPage() {
               <Button size="sm" onClick={() => setSubmitOpen(true)}>
                 <Send className="h-4 w-4" aria-hidden="true" />
                 Ajukan untuk Review
+              </Button>
+            )}
+            {r.status === "ACTIVE" && r.residualScore != null && (isOwner || user?.role === "MR") && (
+              <Button size="sm" onClick={() => setResidualOpen(true)}>
+                <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                Ajukan Residual
               </Button>
             )}
             {canEditFields && (
@@ -458,6 +470,51 @@ export function RiskDetailPage() {
           placeholder="Pesan ke reviewer..."
           value={submitNote}
           onChange={(e) => setSubmitNote(e.target.value)}
+        />
+      </Modal>
+
+      {/* Submit residual modal */}
+      <Modal
+        open={residualOpen}
+        onClose={() => setResidualOpen(false)}
+        title={`Ajukan verifikasi residual ${r.code}?`}
+        description="Residual assessment akan diverifikasi MR. Pastikan program mitigasi telah dilaksanakan."
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setResidualOpen(false)}>
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              loading={submitResidual.isPending}
+              onClick={() =>
+                submitResidual.mutate(
+                  { id: r.id, body: { note: residualNote || undefined } },
+                  {
+                    onSuccess: () => {
+                      toast.success("Residual diajukan", "Menunggu verifikasi MR");
+                      setResidualOpen(false);
+                      setResidualNote("");
+                    },
+                    onError: (err) =>
+                      toast.error("Gagal mengajukan residual", getErrorMessage(err)),
+                  },
+                )
+              }
+            >
+              Ajukan
+            </Button>
+          </>
+        }
+      >
+        <Label htmlFor="residual-note">Catatan (opsional)</Label>
+        <Textarea
+          id="residual-note"
+          rows={3}
+          placeholder="Ringkasan pelaksanaan mitigasi..."
+          value={residualNote}
+          onChange={(e) => setResidualNote(e.target.value)}
         />
       </Modal>
 

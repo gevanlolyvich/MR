@@ -10,7 +10,8 @@
     "db:deploy": "npm run db:deploy -w backend",
     "db:seed": "npm run db:seed -w backend",
     "db:status": "npm run db:status -w backend",
-    "db:check": "npm run db:check -w backend"
+    "db:check": "npm run db:check -w backend",
+    "test": "npm run test -w backend"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
